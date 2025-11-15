@@ -84,7 +84,28 @@ app.listen(4000, function () {
   console.log("Rodando o servidor na porta 4000");
 });
 
+// Aqui para o admin editar slides
+app.put('/slides/:titulo', async (req, resp) => {
+  try {
+    const tituloParaEditar = req.params.titulo; // pega o titulo que vem na url
+    const dadosNovos = req.body; // pega os novos dados do slide que vieram no corpo da requisição
 
+    dadosNovos.expiracao = new Date(dadosNovos.expiracao); // CONVverte de string a date
+
+    const slideAtualizado = await Slide.findOneAndUpdate(
+      { titulo: tituloParaEditar }, // filtro para encontrar o slide
+      dadosNovos, // novos dados para atualizar
+      { new: true } // opção para retornar o slide atualizado
+    );
+    if (!slideAtualizado) {
+      return resp.status(404).send({ mensagem: 'Slide não encontrado com esse titulo' });
+  }
+
+  resp.send(slideAtualizado); // envia o slide atualizado como resposta
+  } catch (e) {
+    resp.status(500).send({ mensagem: 'Erro ao atualizar slide', erro: e.message });
+  }
+});
 
 const MONGODB_URI = 'mongodb://localhost:27017/servidor-propaganda';
 console.log('Conectando a DB .. .. .');
