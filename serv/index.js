@@ -10,37 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
-/* let slides = [
-  {
-    titulo: "Slide A",
-    duracao: 10,
-    conteudo: "<h1>EU SOU O SLIDE A, TREMAM DE MEDO</h1>",
-    expiracao: new Date("2025-11-20T18:30:00")
-  },
-  {
-    titulo: "Slide B",
-    duracao: 5,
-    conteudo: "<h1>Eu sou o slide B xD<h1>",
-    expiracao: new Date("2025-11-30T18:30:00")
-  },
-  {
-    titulo: "Slide Z",
-    duracao: 12,
-    conteudo: "<p>eu sou o slide Z mas nunca mais vou aparecer</p>",
-    expiracao: new Date("2025-11-10T18:30:00")
-  }
-];
-*/
-
-
-/*app.get("/getSlides", (req, res) => {
-  //DEBUG: slide vai ser enviado com tempo de expirar de 20s xD
-  let dataDebug = new Date();
-  dataDebug.setSeconds(dataDebug.getSeconds() + 20); // OBS pela natureza desse debug faz com que o SSE faça esse slide voltar xd
-  dataDebug = dataDebug.toISOString();
-  slides[3].expiracao = dataDebug
-  res.send(slides); // inicilamente vem do nada xd
-}); */
 
 ////////////// SETUP SSE ///////////////////////// 
 // faz sentido termos mais de um cliente por ter vários totens a serem conectados
@@ -70,31 +39,9 @@ app.get("/api/events", (req, res) => {
   req.on('close', () => clientes.filter(cl => cl.id != clienteId))
 })
 
-/* app.post("/api/slides", async (req, res) => {
-  // alterações no banco de dados devem ser feitos aqui, a princípio
-  // DEBUG:
-  novoSlide = {
-    titulo: 'Slide T',
-    duracao: 8,
-    conteudo: '<h2>se você está vendo isso parabéns o SSE está funcionando</h2>',
-    expiracao: new Date("2025-11-30T18:30:00")
-  };
 
-  slides.push(novoSlide);
-
-  chamarVue({
-    type: 'do_fetch',
-    msg: 'Slides foram atualizados, faça o fetch'
-  })
-
-  res.status(201).json({msg: 'sei la'})
-}) 
 ////////////////// end SETUP SSE //////////////////////////
 
-
-/*app.get("/getSlides", function (req, resp) {
-  resp.send(slides); // inicilamente vem do nada xd     /----LOGICA ANTE SO BANCO----/
-}); */
 
 //Aqui agente vai pegar os slides do banco de dados <----------------------
 app.get('/getSlides', async (req, resp) => {
@@ -184,9 +131,6 @@ console.log('Conectando a DB .. .. .');
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Conectado com succeso');
-    /*app.listen(4000, function(){
-      console.log("Rodando o servidor na porta 4000");
-    }); */
   })
   .catch((err) => {
     console.error('Erro ao conectar a DB:', err);
