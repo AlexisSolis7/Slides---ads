@@ -33,19 +33,20 @@ app.use(express.static(__dirname + "/public"));
 */
 
 
-app.get("/getSlides", (req, res) => {
+/*app.get("/getSlides", (req, res) => {
   //DEBUG: slide vai ser enviado com tempo de expirar de 20s xD
   let dataDebug = new Date();
   dataDebug.setSeconds(dataDebug.getSeconds() + 20); // OBS pela natureza desse debug faz com que o SSE faça esse slide voltar xd
   dataDebug = dataDebug.toISOString();
   slides[3].expiracao = dataDebug
   res.send(slides); // inicilamente vem do nada xd
-});
+}); */
 
 ////////////// SETUP SSE ///////////////////////// 
 // faz sentido termos mais de um cliente por ter vários totens a serem conectados
 let clientes = [];
-const chamarVue = (dados) => {
+
+const chamarVue = (dados) => {  // enviando um objeto
   const msg = `data: ${JSON.stringify(dados)}\n\n`;
   clientes.forEach(cliente => {
     cliente.res.write(msg);
@@ -69,7 +70,7 @@ app.get("/api/events", (req, res) => {
   req.on('close', () => clientes.filter(cl => cl.id != clienteId))
 })
 
-app.post("/api/slides", async (req, res) => {
+/* app.post("/api/slides", async (req, res) => {
   // alterações no banco de dados devem ser feitos aqui, a princípio
   // DEBUG:
   novoSlide = {
@@ -87,7 +88,7 @@ app.post("/api/slides", async (req, res) => {
   })
 
   res.status(201).json({msg: 'sei la'})
-})
+}) 
 ////////////////// end SETUP SSE //////////////////////////
 
 
@@ -121,6 +122,11 @@ app.post('/slides', async (req, resp)=>{
     const slide = new Slide(dadosPraSalvar); // cria o objeto slide conforme o modelo
     await slide.save(); // salva o slide no banco de dados
     resp.send(slide); //devolve o slide salvo para o front     <---------- basicamente o que vc fez antes
+    chamarVue({
+      type: 'do_fetch',
+      msg: 'Novo slide criado'
+    });
+
   } catch (e) {
     resp.status(400).send({ mensagem: 'Erro ao salvar slide', erro: e.message });
   }
@@ -134,14 +140,16 @@ app.delete('/slides/:titulo', async (req, resp) => {
   try{
     await Slide.findOneAndDelete({ titulo: titulosPraRemover }); // pede para o mongoose encontrar e remover o slide com o titulo indicado
     resp.send({ mensagem: 'Removido com sucesso' });
+
+    chamarVue({
+      type: 'do_fetch',
+      msg: 'Slide removido'
+    });
   } catch (e) {
     resp.status(500).send({ mensagem: 'Erro ao remover slide', erro: e.message }); //caso de algum erro com o bd
   }
 });
 
-app.listen(4000, function () {
-  console.log("Rodando o servidor na porta 4000");
-});
 
 // Aqui para o admin editar slides
 app.put('/slides/:titulo', async (req, resp) => {
@@ -161,6 +169,11 @@ app.put('/slides/:titulo', async (req, resp) => {
   }
 
   resp.send(slideAtualizado); // envia o slide atualizado como resposta
+
+  chamarVue({
+    type: 'do_fetch',
+    msg: 'Slide atualizado'
+  });
   } catch (e) {
     resp.status(500).send({ mensagem: 'Erro ao atualizar slide', erro: e.message });
   }
@@ -171,10 +184,14 @@ console.log('Conectando a DB .. .. .');
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Conectado com succeso');
-    app.listen(4000, function(){
+    /*app.listen(4000, function(){
       console.log("Rodando o servidor na porta 4000");
-    });
+    }); */
   })
   .catch((err) => {
     console.error('Erro ao conectar a DB:', err);
   });
+
+app.listen(4000, function () {
+  console.log("Rodando o servidor na porta 4000");
+});
