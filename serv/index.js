@@ -33,6 +33,63 @@ app.use(express.static(__dirname + "/public"));
 */
 
 
+app.get("/getSlides", (req, res) => {
+  //DEBUG: slide vai ser enviado com tempo de expirar de 20s xD
+  let dataDebug = new Date();
+  dataDebug.setSeconds(dataDebug.getSeconds() + 20); // OBS pela natureza desse debug faz com que o SSE faça esse slide voltar xd
+  dataDebug = dataDebug.toISOString();
+  slides[3].expiracao = dataDebug
+  res.send(slides); // inicilamente vem do nada xd
+});
+
+////////////// SETUP SSE ///////////////////////// 
+// faz sentido termos mais de um cliente por ter vários totens a serem conectados
+let clientes = [];
+const chamarVue = (dados) => {
+  const msg = `data: ${JSON.stringify(dados)}\n\n`;
+  clientes.forEach(cliente => {
+    cliente.res.write(msg);
+  });
+}
+
+app.get("/api/events", (req, res) => {
+  // aparentemente obrigatório no SSE
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const clienteId = Date.now();
+  const novoCliente = {
+    id: clienteId,
+    res: res
+  }
+  clientes.push(novoCliente);
+  // se o cliente fechar, é removido
+  req.on('close', () => clientes.filter(cl => cl.id != clienteId))
+})
+
+app.post("/api/slides", async (req, res) => {
+  // alterações no banco de dados devem ser feitos aqui, a princípio
+  // DEBUG:
+  novoSlide = {
+    titulo: 'Slide T',
+    duracao: 8,
+    conteudo: '<h2>se você está vendo isso parabéns o SSE está funcionando</h2>',
+    expiracao: new Date("2025-11-30T18:30:00")
+  };
+
+  slides.push(novoSlide);
+
+  chamarVue({
+    type: 'do_fetch',
+    msg: 'Slides foram atualizados, faça o fetch'
+  })
+
+  res.status(201).json({msg: 'sei la'})
+})
+////////////////// end SETUP SSE //////////////////////////
+
 
 /*app.get("/getSlides", function (req, resp) {
   resp.send(slides); // inicilamente vem do nada xd     /----LOGICA ANTE SO BANCO----/
