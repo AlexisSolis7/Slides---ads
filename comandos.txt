@@ -1,0 +1,2 @@
+pwt2/vue/ npm run dev
+pwt2/serv/ node index.js
