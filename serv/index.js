@@ -32,12 +32,14 @@ app.use(express.static(__dirname + "/public"));
 ];
 */
 
+
+
 /*app.get("/getSlides", function (req, resp) {
   resp.send(slides); // inicilamente vem do nada xd     /----LOGICA ANTE SO BANCO----/
 }); */
 
 //Aqui agente vai pegar os slides do banco de dados <----------------------
-app.get('/slides', async (req, resp) => {
+app.get('/getSlides', async (req, resp) => {
   try{
     const slides = await Slide.find(); // aqui agente pede ao mongoose para ele encontrar todos os slides
     resp.send(slides); // depois o moongose enviar os slides encontrados como resposta
@@ -54,7 +56,7 @@ app.post('/slides', async (req, resp)=>{
   try{ 
     const dadosPraSalvar = {
       titulo: novo.titulo,
-      html: novo.html,
+      conteudo: novo.conteudo,
       duracao: novo.duracao,
       expiracao: new Date(novo.expiracao)
     };
